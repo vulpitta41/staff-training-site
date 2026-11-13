@@ -7,7 +7,7 @@
 <title>Vintage cocktail specs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,700&family=Figtree:wght@400;500;600&family=Limelight&family=Josefin+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,700&family=Figtree:wght@400;500;600&family=Limelight&family=Josefin+Sans:wght@400;600;700&family=Bebas+Neue&family=Special+Elite&display=swap" rel="stylesheet">
 <style id="appstyle">
 :root{
   --bg:#E4E9E3; --surface:#F5F7F2; --ink:#1B2420; --muted:#5A6660; --brass:#8F6420; --brass-ink:#fff;
@@ -195,6 +195,73 @@ dt{font-family:var(--deco-caps);text-transform:uppercase;letter-spacing:.08em;fo
 footer{text-align:center;border-top:5px double var(--brass);margin-top:40px;font-family:var(--deco-caps);letter-spacing:.06em}
 dialog{border-radius:2px}
 @media (max-width:540px){ .drink{padding:18px} .drink h3{font-size:1.1rem} }
+
+/* ---------- Chicago speakeasy / big band layer (1920s–40s) ---------- */
+:root{
+  --bg:#EDE2C8; --surface:#FAF3E2; --ink:#17110D; --muted:#5B4C3C; --brass:#8A621B; --brass-ink:#FAF3E2;
+  --line:#CBB68E; --red:#8E1B20; --red-ink:#FAF3E2; --stripe:rgba(23,17,13,.045);
+  --marquee:#17100D; --marquee-ink:#F4E7C8; --bulb:#FFE3A0; --card-paper:#F7EFDB; --card-ink:#2A211A;
+  --big:"Bebas Neue","Oswald",Impact,sans-serif; --type:"Special Elite","Courier New",monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E0B0A; --surface:#1B1411; --ink:#F1E6D0; --muted:#B3A48A; --brass:#D9AE55; --brass-ink:#140E0B;
+    --line:#3B2B22; --red:#D2453F; --red-ink:#140E0B; --stripe:rgba(241,230,208,.035);
+    --marquee:#1B1210; --marquee-ink:#F4E7C8;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E0B0A; --surface:#1B1411; --ink:#F1E6D0; --muted:#B3A48A; --brass:#D9AE55; --brass-ink:#140E0B;
+  --line:#3B2B22; --red:#D2453F; --red-ink:#140E0B; --stripe:rgba(241,230,208,.035);
+  --marquee:#1B1210; --marquee-ink:#F4E7C8;
+}
+
+/* pinstripe suit cloth behind everything */
+body{background:repeating-linear-gradient(90deg,transparent 0 13px,var(--stripe) 13px 14px),var(--bg);background-attachment:fixed}
+.tools{background:var(--bg)}
+
+/* the header becomes a lit theatre marquee */
+header{position:relative;margin-top:22px;padding:30px 26px 30px;background:var(--marquee);color:var(--marquee-ink);
+  border:2px solid var(--brass);box-shadow:0 0 0 5px var(--marquee),0 0 0 6px var(--brass),0 14px 40px rgba(0,0,0,.35)}
+header::before{width:180px;height:48px;margin-bottom:10px;
+  background:radial-gradient(circle at 50% 100%,#E8BE62 0 12px,transparent 13px),
+             repeating-conic-gradient(from 270deg at 50% 100%,#E8BE62 0deg 1.6deg,transparent 1.6deg 9deg);
+  -webkit-mask:radial-gradient(circle at 50% 100%,#000 0 48px,transparent 49px);
+          mask:radial-gradient(circle at 50% 100%,#000 0 48px,transparent 49px)}
+header::after{content:"";position:absolute;inset:5px;width:auto;height:auto;margin:0;border:0;pointer-events:none;padding:11px;
+  background:radial-gradient(circle,#FFF6DA 0 1.6px,var(--bulb) 2.2px 3.6px,rgba(255,190,80,.4) 4.8px,transparent 7.5px) 0 0/22px 22px round;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+          mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+h1{font-family:var(--big);font-weight:400;letter-spacing:.06em;font-size:clamp(2.6rem,10vw,5rem);line-height:.95;color:var(--marquee-ink);
+  text-shadow:0 0 18px rgba(255,200,100,.35),0 2px 0 #000}
+h1::before{content:"★ ★ ★";display:block;font-size:.28em;letter-spacing:.7em;color:#E8BE62;margin-bottom:8px;text-shadow:none}
+header .lede{color:#CDBE9F;font-family:var(--type);font-style:normal;font-size:.92rem}
+
+/* poster-style section headings */
+#list h2{font-family:var(--big);font-size:clamp(1.9rem,6vw,2.5rem);letter-spacing:.07em;color:var(--red);gap:14px}
+.menu-head{font-family:var(--type);font-weight:400;letter-spacing:.12em;color:var(--brass)}
+
+/* chips and buttons like ticket stubs */
+.chip,.btn,.edit{font-family:var(--big);font-size:1.02rem;letter-spacing:.09em;padding:6px 14px 4px}
+.chip[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:var(--red-ink)}
+.search{font-family:var(--type)}
+
+/* recipe cards: big-band billing names, typewritten case-file details */
+.drink h3{font-family:var(--big);font-weight:400;font-size:2rem;letter-spacing:.06em;line-height:1}
+.prep h3,.lesson h3{font-family:var(--big);font-weight:400;font-size:1.5rem;letter-spacing:.06em}
+.aka,dt,.prep-meta,.bx{font-family:var(--type);letter-spacing:.04em}
+dt{text-transform:none;font-size:.82rem}
+.barline a{font-family:var(--type);letter-spacing:0}
+.note{font-family:var(--type);color:var(--card-ink);font-size:.84rem;line-height:1.55;border-left:0;padding:10px 14px 10px 36px;margin-top:16px;
+  background:linear-gradient(90deg,transparent 26px,rgba(178,40,45,.55) 26px 27px,transparent 27px),
+             repeating-linear-gradient(180deg,transparent 0 23px,rgba(70,110,160,.18) 23px 24px),var(--card-paper);
+  box-shadow:0 2px 6px rgba(0,0,0,.25);transform:rotate(-.4deg)}
+footer{font-family:var(--type);letter-spacing:.02em}
+@media (max-width:540px){ .drink h3{font-size:1.6rem} header{padding:24px 16px} }
+@media (prefers-reduced-motion:no-preference){
+  header::after{animation:bulbs 2.4s steps(2) infinite}
+  @keyframes bulbs{50%{opacity:.7}}
+}
 </style>
 </head>
 <body>
@@ -562,7 +629,7 @@ ${text}`;
 /* ---------- saving: the page republishes itself with the new list ---------- */
 function buildDocument(list){
   const data = JSON.stringify(list).replace(/</g,"\\u003c");
-  const head = '<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n<meta name="apple-mobile-web-app-title" content="Vintage specs">\n<title>Vintage cocktail specs</title>\n<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,700&family=Figtree:wght@400;500;600&family=Limelight&family=Josefin+Sans:wght@400;600;700&display=swap" rel="stylesheet">';
+  const head = '<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n<meta name="apple-mobile-web-app-title" content="Vintage specs">\n<title>Vintage cocktail specs</title>\n<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,700&family=Figtree:wght@400;500;600&family=Limelight&family=Josefin+Sans:wght@400;600;700&family=Bebas+Neue&family=Special+Elite&display=swap" rel="stylesheet">';
   return "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n" + head +
     "\n<style id=\"appstyle\">" + $("appstyle").textContent + "</style>\n</head>\n<body>\n<div id=\"root\"></div>\n" +
     "<script type=\"application/json\" id=\"recipes-data\">" + data + "<\/script>\n" +
