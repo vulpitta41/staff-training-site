@@ -373,7 +373,7 @@ textarea.tall{min-height:280px;font-family:var(--type);font-size:.85rem}
 <div id="root"></div>
 <script id="app">
 (function(){
-const SECTIONS = ["Karaoke signatures","Current classics","Classics","Seasonal","Christmas specials","Lair cocktails","Current prep","Forgotten drinks","Syrups & prep","Lessons"];
+const SECTIONS = ["Karaoke signatures","Current classics","Classics","Storyville cocktails","Lulu's cocktails","Stardust cocktails","Lair cocktails","Mocktails","Seasonal","Christmas specials","Current prep","Forgotten drinks","Syrups & prep","Lessons"];
 let recipes = [];
 let session = null, content = null;
 const store = { get(k,d){ try{ const v=localStorage.getItem("vn."+k); return v==null?d:JSON.parse(v); }catch(e){ return d; } }, set(k,v){ try{ localStorage.setItem("vn."+k, JSON.stringify(v)); }catch(e){} } };
@@ -840,7 +840,7 @@ const I18N = {
 };
 const SECTION_ES = { "Karaoke signatures": "Firmas de karaoke", "Current classics": "Clásicos actuales", "Classics": "Clásicos", "Seasonal": "De temporada",
   "Christmas specials": "Especiales de Navidad", "Lair cocktails": "Cócteles de Lair", "Current prep": "Prep actual", "Forgotten drinks": "Bebidas olvidadas",
-  "Syrups & prep": "Jarabes y prep", "Lessons": "Lecciones", "All": "Todas" };
+  "Syrups & prep": "Jarabes y prep", "Lessons": "Lecciones", "All": "Todas", "Storyville cocktails": "Cócteles de Storyville", "Lulu's cocktails": "Cócteles de Lulu's", "Stardust cocktails": "Cócteles de Stardust", "Mocktails": "Sin alcohol" };
 function t(k){ return (I18N[lang] && I18N[lang][k]) || I18N.en[k] || k; }
 function L(o){ return o ? (lang === "es" && o.es ? o.es : o.en || "") : ""; }
 function secName(s){ return lang === "es" ? (SECTION_ES[s] || s) : s; }
