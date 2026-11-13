@@ -359,6 +359,14 @@ textarea.tall{min-height:280px;font-family:var(--type);font-size:.85rem}
 .m-form label.inline{display:flex;gap:8px;align-items:center;color:var(--ink)}
 #view-manage h2,#view-checklists > h2{font-family:var(--big);font-weight:400;letter-spacing:.07em;color:var(--red);font-size:1.7rem;margin:26px 0 8px}
 @media (max-width:540px){ .tabs{align-items:flex-start} .who{width:100%;justify-content:space-between} .row{grid-template-columns:1fr} }
+.ref-doc{margin-top:14px}.ref-doc h3{font-size:1.8rem;margin-bottom:6px}
+.ref-doc h3 ~ h3{font-family:var(--big);font-weight:400;font-size:1.3rem;letter-spacing:.06em;color:var(--red);margin:22px 0 6px}
+.ref-cat{font-family:var(--type);font-size:.8rem;color:var(--brass);margin:0 0 4px}
+.ref-src{font-family:var(--type);font-size:.78rem;color:var(--muted);margin-top:18px}
+.ref-ul{margin:8px 0 0;padding-left:1.2em}.ref-ul li{margin:4px 0}
+.ref-doc table.lt td:first-child{white-space:normal}
+#view-reference > h2{font-family:var(--big);font-weight:400;letter-spacing:.07em;color:var(--red);font-size:1.7rem;margin:26px 0 8px}
+#view-reference .search{flex:1 1 220px}
 </style>
 </head>
 <body>
@@ -539,6 +547,7 @@ root.innerHTML = `<div class="wrap">
     <div class="tab-row">
       <button type="button" class="tab" data-view="recipes">${t("recipes")}</button>
       <button type="button" class="tab" data-view="checklists">${t("checklists")}</button>
+      <button type="button" class="tab" data-view="reference">${t("reference")}</button>
       ${canEdit?`<button type="button" class="tab" data-view="manage">${t("manage")}</button>`:""}
     </div>
     <div class="who">${langSwitch()}<span class="who-name">${esc(session.name)}</span><button type="button" class="linkish" id="logout">${t("logout")}</button></div>
@@ -560,6 +569,7 @@ root.innerHTML = `<div class="wrap">
   <footer>${t("footer")}</footer>
   </section>
   <section id="view-checklists" hidden></section>
+  <section id="view-reference" hidden></section>
   <section id="view-manage" hidden></section>
 </div>
 <dialog id="dlg" aria-labelledby="ed-title"><form class="ed" id="ed" method="dialog"></form></dialog>`;
@@ -804,6 +814,7 @@ const I18N = {
     sent: "Signed off. Managers have the report.", sentNoEmail: "Signed off and saved. (Manager email isn’t set up yet.)",
     sendFail: "That didn’t send. Your ticks are still here — try again.", done: "done", back: "All checklists",
     newChecklist: "New checklist", editChecklist: "Edit checklist", everyVenue: "Every venue",
+    reference: "Reference", refSearch: "Search reference", newDoc: "New document", allRef: "All reference", noRef: "Nothing matches.", source: "Source",
   },
   es: {
     lede: "Todas las recetas de la barra, con un dibujo de cómo debe verse cada bebida al servirla.",
@@ -824,6 +835,7 @@ const I18N = {
     sent: "Firmado. Los gerentes tienen el reporte.", sentNoEmail: "Firmado y guardado. (El correo a gerentes aún no está configurado.)",
     sendFail: "No se envió. Tus marcas siguen aquí — inténtalo de nuevo.", done: "hechas", back: "Todas las listas",
     newChecklist: "Nueva lista", editChecklist: "Editar lista", everyVenue: "Todos los locales",
+    reference: "Referencia", refSearch: "Buscar en referencia", newDoc: "Nuevo documento", allRef: "Toda la referencia", noRef: "Nada coincide.", source: "Fuente",
   },
 };
 const SECTION_ES = { "Karaoke signatures": "Firmas de karaoke", "Current classics": "Clásicos actuales", "Classics": "Clásicos", "Seasonal": "De temporada",
@@ -849,8 +861,9 @@ function showView(v){
   if (v === "manage" && !canEdit) v = "recipes";
   currentView = v; try { sessionStorage.setItem("vn.view", v); } catch(e) {}
   root.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-current", b.dataset.view === v ? "page" : "false"));
-  ["recipes","checklists","manage"].forEach(x => { const el = $("view-"+x); if (el) el.hidden = x !== v; });
+  ["recipes","checklists","reference","manage"].forEach(x => { const el = $("view-"+x); if (el) el.hidden = x !== v; });
   if (v === "checklists") renderChecklists();
+  if (v === "reference") renderReference();
   if (v === "manage") renderManage();
 }
 
@@ -1066,6 +1079,114 @@ async function renderManage(){
     <td>${esc(x.name)}${x.name!==x.signedInAs?` <small>(${esc(x.signedInAs)})</small>`:""}</td>
     <td class="${x.done===x.total?"ok":"warn"}">${x.done}/${x.total}${x.missed&&x.missed.length?`<details><summary>Not done</summary><ul>${x.missed.map(m=>`<li>${esc(m)}</li>`).join("")}</ul></details>`:""}</td>
     <td>${esc(x.notes||"")}</td></tr>`).join("")}</tbody></table>` : `<p class="hint">No sign-offs yet.</p>`;
+}
+
+
+/* ---------- reference library ---------- */
+const REF_CATS = [
+  { id: "bar", en: "Bar reference", es: "Referencia de barra" },
+  { id: "batches", en: "Batches & prep", es: "Batches y prep" },
+  { id: "service", en: "Service", es: "Servicio" },
+  { id: "kitchen", en: "Kitchen", es: "Cocina" },
+];
+let refOpen = null, refQuery = "", refVenue = store.get("refVenue", "all");
+const inline = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/\*(.+?)\*/g, "<i>$1</i>");
+function renderBody(text){
+  const lines = String(text||"").split("\n"); let html = "", i = 0;
+  while (i < lines.length) {
+    const l = lines[i].trim();
+    if (!l) { i++; continue; }
+    if (l.startsWith("### ")) { html += `<h4>${inline(l.slice(4))}</h4>`; i++; continue; }
+    if (l.startsWith("## ")) { html += `<h3>${inline(l.slice(3))}</h3>`; i++; continue; }
+    if (l.startsWith("> ")) { html += `<p class="tip">${inline(l.slice(2))}</p>`; i++; continue; }
+    if (l.startsWith("|")) {
+      const rows = []; while (i < lines.length && lines[i].trim().startsWith("|")) { rows.push(lines[i].trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim())); i++; }
+      const [head, ...body] = rows;
+      html += `<div class="tw"><table class="lt"><thead><tr>${head.map(c=>`<th>${inline(c)}</th>`).join("")}</tr></thead><tbody>${body.map(r=>`<tr>${r.map(c=>`<td>${inline(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+      continue;
+    }
+    if (/^- /.test(l)) { const it = []; while (i < lines.length && /^- /.test(lines[i].trim())) { it.push(lines[i].trim().slice(2)); i++; } html += `<ul class="ref-ul">${it.map(x=>`<li>${inline(x)}</li>`).join("")}</ul>`; continue; }
+    if (/^\d+\. /.test(l)) { const it = []; while (i < lines.length && /^\d+\. /.test(lines[i].trim())) { it.push(lines[i].trim().replace(/^\d+\. /, "")); i++; } html += `<ol class="steps">${it.map(x=>`<li>${inline(x)}</li>`).join("")}</ol>`; continue; }
+    const para = []; while (i < lines.length && lines[i].trim() && !/^(#{2,3} |> |\||- |\d+\. )/.test(lines[i].trim())) { para.push(lines[i].trim()); i++; }
+    html += `<p>${inline(para.join(" "))}</p>`;
+  }
+  return html;
+}
+function refVisible(){
+  const q = refQuery.trim().toLowerCase();
+  return (content.reference||[]).filter(d => (refVenue === "all" || !(d.venues&&d.venues.length) || d.venues.includes(refVenue))
+    && (!q || [d.title.en, d.title.es, d.body].join(" ").toLowerCase().includes(q)));
+}
+function renderReference(){
+  const v = $("view-reference"); if (!v) return;
+  if (refOpen) return renderRefDoc();
+  const list = refVisible();
+  v.innerHTML = `<div class="opts cl-opts">
+      <input class="search" id="ref-q" type="search" placeholder="${attr(t("refSearch"))}" aria-label="${attr(t("refSearch"))}" value="${attr(refQuery)}">
+      <label>${t("venue")} <select id="ref-venue">${venueOptions(refVenue, t("allVenues"))}</select></label>
+      ${canEdit?`<button type="button" class="btn ghost" id="ref-new">${t("newDoc")}</button>`:""}
+    </div>
+    ${REF_CATS.map(c => { const items = list.filter(d => d.category === c.id); if (!items.length) return "";
+      return `<h2>${esc(L(c))}</h2><div class="cl-grid">${items.map(d=>`<button type="button" class="cl-pick" data-ref="${attr(d.id)}"><b>${esc(L(d.title))}</b>
+        <span>${d.venues&&d.venues.length?d.venues.map(venueName).map(esc).join(" · "):esc(t("everyVenue"))}</span></button>`).join("")}</div>`; }).join("")
+      || `<p class="empty">${t("noRef")}</p>`}`;
+  const q = $("ref-q");
+  q.addEventListener("input", e => { refQuery = e.target.value; const pos = e.target.selectionStart; renderReference(); const n = $("ref-q"); n.focus(); n.setSelectionRange(pos, pos); });
+  $("ref-venue").addEventListener("change", e => { refVenue = e.target.value; store.set("refVenue", refVenue); renderReference(); });
+  v.querySelectorAll("[data-ref]").forEach(b => b.addEventListener("click", () => { refOpen = b.dataset.ref; renderReference(); window.scrollTo(0, 0); }));
+  if (canEdit) $("ref-new").addEventListener("click", () => openRefEditor(null));
+}
+function renderRefDoc(){
+  const v = $("view-reference"); const d = (content.reference||[]).find(x => x.id === refOpen);
+  if (!d) { refOpen = null; return renderReference(); }
+  const cat = REF_CATS.find(c => c.id === d.category);
+  v.innerHTML = `<div class="cl-head"><button type="button" class="linkish" id="ref-back">← ${t("allRef")}</button>
+      ${canEdit?`<button type="button" class="btn ghost" id="ref-edit">${t("edit")}</button>`:""}</div>
+    <article class="lesson ref-doc"><p class="ref-cat">${esc(cat ? L(cat) : "")}${d.venues&&d.venues.length?" · "+d.venues.map(venueName).map(esc).join(", "):""}</p>
+      <h3>${esc(L(d.title))}</h3>${renderBody(lang === "es" && d.bodyEs ? d.bodyEs : d.body)}
+      ${d.source?`<p class="ref-src">${t("source")}: ${esc(d.source)}</p>`:""}</article>`;
+  $("ref-back").addEventListener("click", () => { refOpen = null; renderReference(); });
+  if (canEdit) $("ref-edit").addEventListener("click", () => openRefEditor(d));
+}
+function openRefEditor(d){
+  const isNew = !d;
+  d = d || { id: "", category: "bar", title: { en: "", es: "" }, venues: [], body: "", bodyEs: "" };
+  const f = $("ed"); let armed = false;
+  f.innerHTML = `<div class="ed-head"><h2 id="ed-title">${isNew?"New document":"Edit document"}</h2><button type="button" class="btn ghost" data-close>Cancel</button></div>
+  <fieldset><legend>Document</legend>
+    <div class="row"><label>Title (English)<input id="r-ten" value="${attr(d.title.en||"")}"></label><label>Title (Spanish)<input id="r-tes" value="${attr(d.title.es||"")}"></label></div>
+    <label>Section<select id="r-cat">${REF_CATS.map(c=>`<option value="${c.id}"${c.id===d.category?" selected":""}>${esc(c.en)}</option>`).join("")}</select></label>
+    <p class="hint">Venues (leave all unticked for every venue)</p>
+    <div class="checks" id="r-venues">${(content.venues||[]).map(v=>`<label><input type="checkbox" value="${attr(v.id)}"${(d.venues||[]).includes(v.id)?" checked":""}> ${esc(v.name)}</label>`).join("")}</div>
+  </fieldset>
+  <fieldset><legend>Text</legend>
+    <p class="hint">Write normally. <b>## </b>heading · <b>- </b>bullet · <b>1. </b>numbered step · <b>&gt; </b>tip · <b>| a | b |</b> table row (first row is the header) · <b>**bold**</b>. Leave a blank line between paragraphs.</p>
+    <label>English<textarea id="r-body" class="tall">${esc(d.body||"")}</textarea></label>
+    <label>Spanish (optional — shown when someone picks ES)<textarea id="r-bodyes" class="tall">${esc(d.bodyEs||"")}</textarea></label>
+  </fieldset>
+  <div class="ed-actions"><div>${isNew?"":`<button type="button" class="btn danger" id="r-del">Delete document</button>`}</div>
+  <div><button type="button" class="btn ghost" data-close>Cancel</button><button type="button" class="btn" id="r-save">Save</button></div></div>
+  <p class="status" id="r-status" role="status"></p>`;
+  $("dlg").showModal();
+  const close = () => $("dlg").close();
+  const persist = async list => {
+    const r = await api("PUT", "/api/content/reference", { data: list, base: (content.versions||{}).reference });
+    if (r.ok) { content = r.body.content; close(); renderReference(); return; }
+    if (r.status === 409) { content = r.body.content; $("r-status").textContent = t("conflict"); renderReference(); return; }
+    if (r.status !== 401) $("r-status").textContent = t("saveFail");
+  };
+  if (!isNew) $("r-del").addEventListener("click", e => {
+    if (!armed) { armed = true; e.target.textContent = "Tap again to delete"; return; }
+    refOpen = null; persist((content.reference||[]).filter(x => x.id !== d.id));
+  });
+  $("r-save").addEventListener("click", () => {
+    const en = $("r-ten").value.trim(); if (!en) { $("r-status").textContent = "Give the document a title."; return; }
+    const next = { ...d, title: { en, es: $("r-tes").value.trim() }, category: $("r-cat").value, venues: [...document.querySelectorAll("#r-venues input:checked")].map(x=>x.value),
+      body: $("r-body").value, bodyEs: $("r-bodyes").value };
+    if (isNew) next.id = (en.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") || "doc") + "-" + Math.random().toString(36).slice(2,6);
+    persist(isNew ? [...(content.reference||[]), next] : (content.reference||[]).map(x => x.id === d.id ? next : x));
+    if (isNew) refOpen = next.id;
+  });
 }
 
 boot();

@@ -7,7 +7,7 @@ const COOKIE = "vn_session";
 const SESSION_DAYS = 30;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_MAX_FAILS = 8;
-const SECTIONS = ["recipes", "checklists", "venues", "roles", "settings"];
+const SECTIONS = ["recipes", "checklists", "reference", "venues", "roles", "settings"];
 const enc = new TextEncoder();
 
 export const config = { path: "/api/*" };
@@ -214,6 +214,17 @@ async function seed(req, store) {
   const b = await req.json().catch(() => null);
   if (!b || !b.content) return json({ error: "bad_request" }, 400);
   const existing = await store.get("content", { type: "json" });
+  // merge: add or replace only the sections sent, keep everything else (recipes, passwords, edits) as it is
+  if (b.merge && existing) {
+    const content = { ...emptyContent(), ...existing, versions: { ...(existing.versions || {}) } };
+    for (const s of Object.keys(b.content)) {
+      if (!SECTIONS.includes(s) || !validSection(s, b.content[s])) return json({ error: "invalid_data", section: s }, 400);
+      content[s] = b.content[s];
+      content.versions[s] = new Date().toISOString();
+    }
+    await store.setJSON("content", content);
+    return json({ ok: true, merged: Object.keys(b.content), counts: { recipes: content.recipes.length, checklists: content.checklists.length, reference: (content.reference || []).length } });
+  }
   if (existing && !b.overwrite) return json({ error: "already_seeded" }, 409);
   const content = { ...emptyContent(), ...b.content, versions: {} };
   for (const s of SECTIONS) content.versions[s] = new Date().toISOString();
@@ -228,7 +239,7 @@ function storeContext(context) {
   return String(c).replace(/[^a-z-]/g, "") || "production";
 }
 function emptyContent() {
-  return { recipes: [], checklists: [], venues: [], roles: [], settings: { managerEmails: [] }, versions: {} };
+  return { recipes: [], checklists: [], reference: [], venues: [], roles: [], settings: { managerEmails: [] }, versions: {} };
 }
 function validSection(section, data) {
   if (section === "settings") return data && typeof data === "object" && !Array.isArray(data);
