@@ -228,8 +228,22 @@ header::before{width:180px;height:48px;margin-bottom:10px;
              repeating-conic-gradient(from 270deg at 50% 100%,#E8BE62 0deg 1.6deg,transparent 1.6deg 9deg);
   -webkit-mask:radial-gradient(circle at 50% 100%,#000 0 48px,transparent 49px);
           mask:radial-gradient(circle at 50% 100%,#000 0 48px,transparent 49px)}
-header::after{content:"";position:absolute;inset:5px;width:auto;height:auto;margin:0;border:0;pointer-events:none;padding:11px;
-  background:radial-gradient(circle,#FFF6DA 0 1.6px,var(--bulb) 2.2px 3.6px,rgba(255,190,80,.4) 4.8px,transparent 7.5px) 0 0/22px 22px round;
+@property --ba{syntax:'<color>';inherits:false;initial-value:#FFE7A6}
+@property --bb{syntax:'<color>';inherits:false;initial-value:#FFE7A6}
+header::after{content:"";position:absolute;inset:5px;width:auto;height:auto;margin:0;border:0;pointer-events:none;padding:18px;
+  --ba:#FFE7A6;--bb:#FFE7A6;
+  background:
+    radial-gradient(circle at 9px 9px,#FFF8E6 0 1.4px,var(--ba) 2.2px 3.9px,color-mix(in srgb,var(--ba) 40%,transparent) 5.2px,transparent 8px) 0 0/36px 36px round,
+    radial-gradient(circle at 27px 27px,#FFF8E6 0 1.4px,var(--ba) 2.2px 3.9px,color-mix(in srgb,var(--ba) 40%,transparent) 5.2px,transparent 8px) 0 0/36px 36px round,
+    radial-gradient(circle at 27px 9px,#FFF8E6 0 1.4px,var(--bb) 2.2px 3.9px,color-mix(in srgb,var(--bb) 40%,transparent) 5.2px,transparent 8px) 0 0/36px 36px round,
+    radial-gradient(circle at 9px 27px,#FFF8E6 0 1.4px,var(--bb) 2.2px 3.9px,color-mix(in srgb,var(--bb) 40%,transparent) 5.2px,transparent 8px) 0 0/36px 36px round;
+  animation:marquee-chase 1.2s infinite}
+@keyframes marquee-chase{
+  0%,49.9%{--ba:#FFE7A6;--bb:#5E3F1C}
+  50%,100%{--ba:#5E3F1C;--bb:#FFE7A6}
+}
+@media (prefers-reduced-motion:reduce){ header::after{animation-duration:3s} }
+header::after{
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
           mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
 h1{font-family:var(--big);font-weight:400;letter-spacing:.06em;font-size:clamp(2.6rem,10vw,5rem);line-height:.95;color:var(--marquee-ink);
@@ -257,11 +271,11 @@ dt{text-transform:none;font-size:.82rem}
              repeating-linear-gradient(180deg,transparent 0 23px,rgba(70,110,160,.18) 23px 24px),var(--card-paper);
   box-shadow:0 2px 6px rgba(0,0,0,.25);transform:rotate(-.4deg)}
 footer{font-family:var(--type);letter-spacing:.02em}
-@media (max-width:540px){ .drink h3{font-size:1.6rem} header{padding:24px 16px} }
-@media (prefers-reduced-motion:no-preference){
-  header::after{animation:bulbs 2.4s steps(2) infinite}
-  @keyframes bulbs{50%{opacity:.7}}
-}
+@media (max-width:540px){ .drink h3{font-size:1.6rem} header{padding:34px 30px} }
+/* keep each card's inset frame inside its own card */
+.lesson{position:relative}
+/* sticky search bar spans the side gutters so the drink strip can't slide past it */
+.tools{margin-left:-20px;margin-right:-20px;padding-left:20px;padding-right:20px}
 </style>
 </head>
 <body>
