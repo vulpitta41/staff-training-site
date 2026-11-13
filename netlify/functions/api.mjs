@@ -212,8 +212,28 @@ async function seed(req, store) {
   const token = Netlify.env.get("SEED_TOKEN");
   if (!token || !timingSafeEqual(req.headers.get("x-seed-token") || "", token)) return json({ error: "forbidden" }, 403);
   const b = await req.json().catch(() => null);
-  if (!b || !b.content) return json({ error: "bad_request" }, 400);
+  if (!b || (!b.content && !b.upsert)) return json({ error: "bad_request" }, 400);
   const existing = await store.get("content", { type: "json" });
+  // upsert: add new cards and update existing ones by id (fields sent replace those fields only); nothing else changes
+  if (b.upsert && existing) {
+    const content = { ...emptyContent(), ...existing, versions: { ...(existing.versions || {}) } };
+    const counts = {};
+    for (const s of Object.keys(b.upsert)) {
+      if (!["recipes", "checklists", "reference"].includes(s) || !Array.isArray(b.upsert[s])) return json({ error: "invalid_data", section: s }, 400);
+      const list = [...(content[s] || [])];
+      let added = 0, updated = 0;
+      for (const item of b.upsert[s]) {
+        if (!item || !item.id) return json({ error: "missing_id", section: s }, 400);
+        const i = list.findIndex((x) => x.id === item.id);
+        if (i >= 0) { list[i] = { ...list[i], ...item }; updated++; } else { list.push(item); added++; }
+      }
+      content[s] = list;
+      content.versions[s] = new Date().toISOString();
+      counts[s] = { added, updated, total: list.length };
+    }
+    await store.setJSON("content", content);
+    return json({ ok: true, counts });
+  }
   // merge: add or replace only the sections sent, keep everything else (recipes, passwords, edits) as it is
   if (b.merge && existing) {
     const content = { ...emptyContent(), ...existing, versions: { ...(existing.versions || {}) } };
