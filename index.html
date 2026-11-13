@@ -7,7 +7,7 @@
 <title>Vintage cocktail specs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,700&family=Figtree:wght@400;500;600&family=Limelight&family=Josefin+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style id="appstyle">
 :root{
   --bg:#E4E9E3; --surface:#F5F7F2; --ink:#1B2420; --muted:#5A6660; --brass:#8F6420; --brass-ink:#fff;
@@ -137,6 +137,64 @@ input[type=color]{width:44px;height:32px;border:1px solid var(--line);border-rad
 .ed-actions{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;margin-top:6px}
 .ed-actions div{display:flex;gap:8px}
 .hint{font-size:.85rem;color:var(--muted);margin:0 0 8px}
+
+/* ---------- 1920s Art Deco look ---------- */
+:root{
+  --bg:#F1E8D2; --surface:#FBF6EA; --ink:#14110C; --muted:#5E5444; --brass:#86621A; --brass-ink:#FBF6EA;
+  --line:#CDBB8E; --field:#FFFDF7; --glass-fill:rgba(255,255,255,.55); --glass-line:#6B5E45; --danger:#9A2B22;
+  --deco-head:"Limelight","Bodoni Moda",Georgia,serif; --deco-caps:"Josefin Sans","Figtree",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D0C0A; --surface:#17150F; --ink:#EFE6CF; --muted:#A99D82; --brass:#D4AF5A; --brass-ink:#14110C;
+    --line:#3A3222; --field:#0D0C0A; --glass-fill:rgba(255,255,255,.06); --glass-line:#A08F68; --danger:#E07A70;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D0C0A; --surface:#17150F; --ink:#EFE6CF; --muted:#A99D82; --brass:#D4AF5A; --brass-ink:#14110C;
+  --line:#3A3222; --field:#0D0C0A; --glass-fill:rgba(255,255,255,.06); --glass-line:#A08F68; --danger:#E07A70;
+}
+
+/* header: sunburst fan, deco title, double rule */
+header{text-align:center;padding-top:28px}
+header::before{content:"";display:block;width:200px;height:56px;margin:0 auto 14px;
+  background:radial-gradient(circle at 50% 100%,var(--brass) 0 13px,transparent 14px),
+             repeating-conic-gradient(from 270deg at 50% 100%,var(--brass) 0deg 1.6deg,transparent 1.6deg 9deg);
+  -webkit-mask:radial-gradient(circle at 50% 100%,#000 0 56px,transparent 57px);
+          mask:radial-gradient(circle at 50% 100%,#000 0 56px,transparent 57px)}
+header::after{content:"";display:block;width:min(320px,80%);height:9px;margin:20px auto 0;
+  border-top:1px solid var(--brass);border-bottom:1px solid var(--brass);
+  background:linear-gradient(var(--brass),var(--brass)) center/26% 3px no-repeat}
+h1{font-family:var(--deco-head);font-weight:400;text-transform:uppercase;letter-spacing:.05em;font-size:clamp(2rem,7vw,3.6rem);line-height:1.08}
+.lede{margin:0 auto;font-style:italic}
+
+/* controls: squared, small caps, gold */
+.search{border-radius:0;border:1px solid var(--line);border-bottom:2px solid var(--brass)}
+.chip,.btn,.edit{border-radius:0;font-family:var(--deco-caps);text-transform:uppercase;letter-spacing:.1em;font-size:.76rem;padding-top:8px}
+.chip{border-color:var(--brass)}
+.chip[aria-pressed="true"]{background:var(--brass);color:var(--brass-ink);border-color:var(--brass)}
+.barline ol{border-bottom:5px double var(--brass)}
+.barline a{font-family:var(--deco-caps);letter-spacing:.03em}
+
+/* section headings flanked by double rules */
+#list h2{display:flex;align-items:center;gap:16px;text-align:center;font-family:var(--deco-head);font-weight:400;
+  text-transform:uppercase;letter-spacing:.08em;font-size:clamp(1.25rem,4.5vw,1.7rem);margin:52px 0 20px}
+#list h2::before,#list h2::after{content:"";flex:1;height:5px;border-top:1px solid var(--brass);border-bottom:1px solid var(--brass)}
+.menu-head{font-family:var(--deco-caps);font-weight:600;text-transform:uppercase;letter-spacing:.2em;font-size:.95rem;text-align:center}
+
+/* cards: square corners with an inset gold frame */
+.drink,.lesson,.prep{border-radius:2px;border-color:var(--brass)}
+.drink{padding:24px}
+.drink::before,.lesson::before{content:"";position:absolute;inset:5px;border:1px solid var(--brass);opacity:.45;pointer-events:none}
+.drink h3{font-family:var(--deco-caps);font-weight:700;text-transform:uppercase;letter-spacing:.07em;font-size:1.3rem;line-height:1.2}
+.prep h3,.lesson h3{font-family:var(--deco-caps);font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.lesson h4{font-family:var(--deco-caps);text-transform:uppercase;letter-spacing:.08em;font-size:.9rem}
+dt{font-family:var(--deco-caps);text-transform:uppercase;letter-spacing:.08em;font-size:.78rem;padding-top:2px}
+.dot{border-radius:0;transform:rotate(45deg);width:10px;height:10px}
+
+footer{text-align:center;border-top:5px double var(--brass);margin-top:40px;font-family:var(--deco-caps);letter-spacing:.06em}
+dialog{border-radius:2px}
+@media (max-width:540px){ .drink{padding:18px} .drink h3{font-size:1.1rem} }
 </style>
 </head>
 <body>
@@ -504,7 +562,7 @@ ${text}`;
 /* ---------- saving: the page republishes itself with the new list ---------- */
 function buildDocument(list){
   const data = JSON.stringify(list).replace(/</g,"\\u003c");
-  const head = '<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n<meta name="apple-mobile-web-app-title" content="Vintage specs">\n<title>Vintage cocktail specs</title>\n<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">';
+  const head = '<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n<meta name="apple-mobile-web-app-title" content="Vintage specs">\n<title>Vintage cocktail specs</title>\n<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,700&family=Figtree:wght@400;500;600&family=Limelight&family=Josefin+Sans:wght@400;600;700&display=swap" rel="stylesheet">';
   return "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n" + head +
     "\n<style id=\"appstyle\">" + $("appstyle").textContent + "</style>\n</head>\n<body>\n<div id=\"root\"></div>\n" +
     "<script type=\"application/json\" id=\"recipes-data\">" + data + "<\/script>\n" +
