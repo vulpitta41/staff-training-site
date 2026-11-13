@@ -237,12 +237,12 @@ header::after{content:"";position:absolute;inset:5px;width:auto;height:auto;marg
     radial-gradient(circle at 27px 27px,#FFF8E6 0 1.4px,var(--ba) 2.2px 3.9px,color-mix(in srgb,var(--ba) 40%,transparent) 5.2px,transparent 8px) 0 0/36px 36px round,
     radial-gradient(circle at 27px 9px,#FFF8E6 0 1.4px,var(--bb) 2.2px 3.9px,color-mix(in srgb,var(--bb) 40%,transparent) 5.2px,transparent 8px) 0 0/36px 36px round,
     radial-gradient(circle at 9px 27px,#FFF8E6 0 1.4px,var(--bb) 2.2px 3.9px,color-mix(in srgb,var(--bb) 40%,transparent) 5.2px,transparent 8px) 0 0/36px 36px round;
-  animation:marquee-chase 1.2s infinite}
+  animation:marquee-chase .6s infinite}
 @keyframes marquee-chase{
   0%,49.9%{--ba:#FFE7A6;--bb:#5E3F1C}
   50%,100%{--ba:#5E3F1C;--bb:#FFE7A6}
 }
-@media (prefers-reduced-motion:reduce){ header::after{animation-duration:3s} }
+@media (prefers-reduced-motion:reduce){ header::after{animation-duration:2s} }
 header::after{
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
           mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
