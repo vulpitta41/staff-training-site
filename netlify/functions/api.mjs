@@ -211,6 +211,15 @@ async function emailManagers(content, sub) {
 async function seed(req, store) {
   const token = Netlify.env.get("SEED_TOKEN");
   if (!token || !timingSafeEqual(req.headers.get("x-seed-token") || "", token)) return json({ error: "forbidden" }, 403);
+  // each setup key works for one successful load, then switches itself off (no redeploy needed)
+  const usedKey = "seed-used/" + [...new Uint8Array(await crypto.subtle.digest("SHA-256", enc.encode(token)))].map((x) => x.toString(16).padStart(2, "0")).join("").slice(0, 32);
+  if (await store.get(usedKey)) return json({ error: "token_used" }, 403);
+  const res = await seedApply(req, store);
+  if (res.status === 200) await store.setJSON(usedKey, { at: new Date().toISOString() });
+  return res;
+}
+
+async function seedApply(req, store) {
   const b = await req.json().catch(() => null);
   if (!b || (!b.content && !b.upsert)) return json({ error: "bad_request" }, 400);
   const existing = await store.get("content", { type: "json" });
